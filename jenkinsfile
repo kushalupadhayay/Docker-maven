@@ -1,0 +1,32 @@
+pipeline{
+    agent any
+    tools{
+        maven 'maven-3.6.3'
+    }
+    stages{
+        stage('Build'){
+            steps{
+                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: '949659e0-fd5a-4ce9-986e-defe0f44d6a5', url: 'https://github.com/deeptikumari09/SpringBoot']])
+                bat 'mvn clean install'
+            }
+        }
+        stage('Build docker image'){
+            steps{
+                script{
+                    bat 'docker build -t deepti09/springboot-application .'
+                }
+            }
+        }
+        stage('push image to hub'){
+            steps{
+                script{
+                    withCredentials([string(credentialsId: 'dockerpassword', variable: 'Mylogin')]) {
+                    bat 'docker login -u deepti09 -p ${Mylogin}'
+}
+                    bat 'docker push deepti09/springboot-application'
+                    
+                }
+            }
+        }
+    }
+}
